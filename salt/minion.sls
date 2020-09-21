@@ -196,3 +196,50 @@ remove-macpackage-salt:
     - name: /tmp/salt.pkg
     - force: True
     {% endif %}
+
+permissions-minion-config:
+  file.managed:
+    - name: {{ salt_settings.config_path }}/minion
+    - user: root
+    - group: root
+    - mode: 640
+    - replace: False
+
+salt-minion-pki-dir:
+  file.directory:
+{% if 'pki_dir' in salt_settings.minion %}
+    - name: {{ salt_settings.minion.pki_dir }}
+{% else %}
+    - name: {{ salt_settings.config_path }}/pki/minion
+{% endif %}
+    - user: root
+    - group: root
+    - mode: 700
+
+permissions-minion.pem:
+  file.managed:
+{% if 'pki_dir' in salt_settings.minion %}
+    - name: {{ salt_settings.minion.pki_dir }}/minion.pem
+{% else %}
+    - name: {{ salt_settings.config_path }}/pki/minion/minion.pem
+{% endif %}
+    - user: root
+    - group: root
+    - mode: 400
+    - replace: False
+    - require:
+      - file: salt-minion-pki-dir
+
+permissions-minion.pub:
+  file.managed:
+{% if 'pki_dir' in salt_settings.minion %}
+    - name: {{ salt_settings.minion.pki_dir }}/minion.pub
+{% else %}
+    - name: {{ salt_settings.config_path }}/pki/minion/minion.pub
+{% endif %}
+    - user: root
+    - group: root
+    - mode: 644
+    - replace: False
+    - require:
+      - file: salt-minion-pki-dir
